@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BBA CGPA Calculator — Free CGPA &amp; GPA Calculator for Business Administration Students</title>
+  <meta name="description" content="Calculate your semester GPA and cumulative CGPA in seconds. Built for Business Administration students on a 4.00 grading scale — free, private, and works on any device." />
+  <meta name="theme-color" content="#10192F" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="BBA CGPA Calculator" />
+  <meta property="og:description" content="Calculate your semester GPA and cumulative CGPA in seconds — free, private, and works on any device." />
+  <meta property="og:image" content="assets/screenshots/preview.png" />
+
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Set theme before first paint to avoid a flash of the wrong color scheme -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('cgpa-theme');
+        var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+
+  <a class="skip-link" href="#courseTable">Skip to course entry</a>
+
+  <div class="page">
+
+    <!-- ========== SITE HEADER ========== -->
+    <header class="site-header">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="30" fill="var(--ink-900)"/>
+          <path d="M12 36 A20 20 0 0 1 52 36" fill="none" stroke="var(--gold-500)" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="32" cy="36" r="3.2" fill="var(--gold-500)"/>
+          <line x1="32" y1="36" x2="42" y2="26" stroke="var(--paper-050)" stroke-width="2.6" stroke-linecap="round"/>
+        </svg>
+        <div class="brand-text">
+          <h1>CGPA Calculator</h1>
+          <p>Business Administration &middot; 4.00 scale</p>
+        </div>
+      </div>
+
+      <button id="themeToggle" class="btn-icon" type="button" aria-label="Switch color theme" aria-pressed="false">
+        <svg class="icon icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke-linecap="round"/></svg>
+        <svg class="icon icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
+      </button>
+    </header>
+
+    <main class="layout">
+
+      <!-- ========== COURSE ENTRY ========== -->
+      <section class="panel" aria-labelledby="entryHeading">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Step 1</p>
+            <h2 id="entryHeading">Course entry</h2>
+          </div>
+          <p class="panel-hint">Add every course from this semester, then calculate.</p>
+        </div>
+
+        <div class="table-scroll">
+          <table class="course-table" id="courseTable">
+            <thead>
+              <tr>
+                <th scope="col" class="col-num">#</th>
+                <th scope="col" class="col-name">Course name</th>
+                <th scope="col" class="col-credit">Credit</th>
+                <th scope="col" class="col-grade">Grade</th>
+                <th scope="col" class="col-action"><span class="sr-only">Remove</span></th>
+              </tr>
+            </thead>
+            <tbody id="courseRows"><!-- Rows injected by JS --></tbody>
+          </table>
+        </div>
+
+        <button class="btn-add" id="addRowBtn" type="button">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+          Add course
+        </button>
+
+        <div class="validation-summary" id="validationSummary" role="alert" aria-live="assertive"></div>
+
+        <!-- Optional cumulative CGPA -->
+        <details class="cumulative-toggle" id="cumulativeDetails">
+          <summary>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Include previous CGPA to see your updated cumulative CGPA
+          </summary>
+          <div class="cumulative-fields">
+            <label>
+              <span>Previous CGPA</span>
+              <input type="number" id="prevCgpa" placeholder="e.g. 3.42" step="0.01" min="0" max="4" inputmode="decimal" />
+            </label>
+            <label>
+              <span>Credits completed so far</span>
+              <input type="number" id="prevCredits" placeholder="e.g. 60" step="0.5" min="0" inputmode="decimal" />
+            </label>
+          </div>
+        </details>
+
+        <div class="action-row">
+          <button class="btn-primary" id="calculateBtn" type="button">Calculate CGPA</button>
+          <button class="btn-ghost" id="resetBtn" type="button">Reset all</button>
+        </div>
+      </section>
+
+      <!-- ========== RESULTS ========== -->
+      <section class="panel results-panel" id="resultsZone" aria-labelledby="resultsHeading" aria-live="polite">
+        <div class="results-empty" id="resultsEmpty">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5a1 1 0 0 1 1-1h9l6 6v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/><path d="M14 4v5a1 1 0 0 0 1 1h5M9 13h6M9 17h6" stroke-linecap="round"/></svg>
+          <p>Your transcript summary will appear here after you calculate.</p>
+        </div>
+
+        <div class="results-content" id="resultsContent" hidden>
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Step 2</p>
+              <h2 id="resultsHeading">Transcript summary</h2>
+            </div>
+            <div class="results-actions">
+              <button class="btn-icon" id="copyBtn" type="button" aria-label="Copy summary to clipboard" title="Copy summary">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              </button>
+              <button class="btn-icon" id="printBtn" type="button" aria-label="Print or save as PDF" title="Print / Save as PDF">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V3h12v6M6 18h12v3H6zM4 9h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2v-3H6v3H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2Z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="gauge-row">
+            <div class="gauge-wrap">
+              <svg class="gauge" viewBox="0 0 200 120" aria-hidden="true">
+                <path class="gauge-track" d="M20 110 A80 80 0 0 1 180 110" />
+                <path class="gauge-fill" id="gaugeFill" d="M20 110 A80 80 0 0 1 180 110" />
+                <line class="gauge-needle" id="gaugeNeedle" x1="100" y1="110" x2="100" y2="40" />
+                <circle class="gauge-hub" cx="100" cy="110" r="5" />
+              </svg>
+              <div class="gauge-readout">
+                <span class="gauge-value" id="gaugeValue">0.00</span>
+                <span class="gauge-label" id="gaugeLabel">Semester GPA</span>
+              </div>
+            </div>
+
+            <div class="summary-cards">
+              <div class="summary-item">
+                <span class="label">Semester credits</span>
+                <span class="value" id="totalCreditsDisplay">—</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Quality points</span>
+                <span class="value" id="totalQpDisplay">—</span>
+              </div>
+              <div class="summary-item" id="cumulativeCard" hidden>
+                <span class="label">Cumulative CGPA</span>
+                <span class="value strong" id="cumulativeDisplay">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-scroll">
+            <table class="result-table" id="resultTable">
+              <thead>
+                <tr>
+                  <th scope="col">Course</th>
+                  <th scope="col">Credit</th>
+                  <th scope="col">Grade</th>
+                  <th scope="col">Grade point</th>
+                  <th scope="col">Quality points</th>
+                </tr>
+              </thead>
+              <tbody id="resultBody"></tbody>
+            </table>
+          </div>
+
+          <div class="grade-ref">
+            <span><b>A+</b> 4.00</span><span><b>A</b> 3.75</span><span><b>A−</b> 3.50</span>
+            <span><b>B+</b> 3.25</span><span><b>B</b> 3.00</span><span><b>B−</b> 2.75</span>
+            <span><b>C+</b> 2.50</span><span><b>C</b> 2.25</span><span><b>D</b> 2.00</span><span><b>F</b> 0.00</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <p>Built for Business Administration students. Nothing you type ever leaves your browser.</p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/script.js" defer></script>
+</body>
+</html>
