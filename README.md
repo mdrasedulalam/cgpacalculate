@@ -1,4 +1,4 @@
-# 🎓 BBA CGPA Calculator
+# 🎓 CGPA Calculator
 
 A free, fast, and private CGPA/GPA calculator built for Business Administration students on a 4.00 grading scale. No sign-up, no backend, no data collection — everything runs entirely in your browser.
 
